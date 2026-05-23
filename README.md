@@ -4,7 +4,7 @@ A PowerShell script for retrieving and examining Transport Layer Security (TLS) 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://docs.microsoft.com/en-us/powershell/)
-[![Version](https://img.shields.io/badge/Version-2.4.0-brightgreen.svg)](https://github.com/richardhicks/tlscertificate/blob/main/Get-TlsCertificate.ps1)
+[![Version](https://img.shields.io/badge/Version-2.5.0-brightgreen.svg)](https://github.com/richardhicks/tlscertificate/blob/main/Get-TlsCertificate.ps1)
 
 ## Overview
 
@@ -15,7 +15,7 @@ A PowerShell script for retrieving and examining Transport Layer Security (TLS) 
 - Retrieve TLS certificate details from any HTTPS-enabled server
 - Support for custom TCP ports (default: 443)
 - Process multiple hostnames in a single command
-- Export certificates to PEM format files (saved as `<hostname>.crt` in the current directory)
+- Export certificates to PEM format files (saved as `<hostname>.crt` in the current directory, or to a custom path using `-FilePath`)
 - Support for both RSA and ECC (Elliptic Curve) certificates
 - Detailed certificate information including:
   - Subject and Subject Alternative Names (SANs)
@@ -80,7 +80,7 @@ cd tlscertificate
 ### Basic Syntax
 
 ```powershell
-.\Get-TlsCertificate.ps1 -Hostname <String[]> [-Port <Int32>] [-OutFile]
+.\Get-TlsCertificate.ps1 -Hostname <String[]> [-Port <Int32>] [-OutFile] [-FilePath <String>]
 ```
 
 ### Parameters
@@ -90,6 +90,7 @@ cd tlscertificate
 | `-Hostname` | Yes | - | The server name or FQDN of the target resource. Accepts multiple values. |
 | `-Port` | No | 443 | The TCP port of the target resource. |
 | `-OutFile` | No | - | When specified, saves the certificate to the current directory as `<hostname>.crt` in PEM format. |
+| `-FilePath` | No | - | Specifies a custom filename and path for the exported certificate file. Overrides the default `<hostname>.crt` naming when saving a certificate. |
 
 ## Examples
 
@@ -230,6 +231,20 @@ RD Gateway servers typically use port 443.
 ```powershell
 .\Get-TlsCertificate.ps1 -Hostname 'www.contoso.com', 'www.fabrikam.com' -OutFile
 # Creates: www.contoso.com.crt, www.fabrikam.com.crt
+```
+
+**Save a certificate to a custom filename and path:**
+
+```powershell
+.\Get-TlsCertificate.ps1 -Hostname 'www.contoso.com' -FilePath 'C:\Certs\contoso-web.crt'
+# Creates: C:\Certs\contoso-web.crt
+```
+
+**Save a certificate to a specific directory with a descriptive name:**
+
+```powershell
+.\Get-TlsCertificate.ps1 -Hostname 'vpn.contoso.com' -FilePath 'C:\Certs\VPN\vpn-contoso-2026.crt'
+# Creates: C:\Certs\VPN\vpn-contoso-2026.crt
 ```
 
 ### Pipeline Input
