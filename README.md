@@ -4,7 +4,7 @@ A PowerShell script for retrieving and examining Transport Layer Security (TLS) 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://docs.microsoft.com/en-us/powershell/)
-[![Version](https://img.shields.io/badge/Version-2.5.0-brightgreen.svg)](https://github.com/richardhicks/tlscertificate/blob/main/Get-TlsCertificate.ps1)
+[![Version](https://img.shields.io/badge/Version-2.5.1-brightgreen.svg)](https://github.com/richardhicks/tlscertificate/blob/main/Get-TlsCertificate.ps1)
 
 ## Overview
 
@@ -20,7 +20,7 @@ A PowerShell script for retrieving and examining Transport Layer Security (TLS) 
 - Detailed certificate information including:
   - Subject and Subject Alternative Names (SANs)
   - Issuer
-  - Serial Number and Thumbprint
+  - Serial Number, SHA-1 Thumbprint, and SHA-256 Thumbprint
   - Validity period (Issued/Expires dates)
   - Enhanced Key Usage (EKU)
   - Public key algorithm and key size
@@ -279,6 +279,7 @@ The script returns a custom PowerShell object with the following properties:
 | `Issuer` | The issuer name of the certificate |
 | `SerialNumber` | The serial number of the certificate |
 | `Thumbprint` | The SHA-1 thumbprint of the certificate |
+| `SHA256Thumbprint` | The SHA-256 thumbprint of the certificate |
 | `Issued` | The date and time the certificate is valid from |
 | `Expires` | The date and time the certificate expires |
 | `AlternativeNames` | The subject alternative names (SANs) of the certificate |
@@ -294,6 +295,7 @@ Subject                 : CN=www.example.com
 Issuer                  : CN=DigiCert TLS RSA SHA256 2020 CA1, O=DigiCert Inc, C=US
 SerialNumber            : 0123456789ABCDEF0123456789ABCDEF
 Thumbprint              : ABCDEF1234567890ABCDEF1234567890ABCDEF12
+SHA256Thumbprint        : A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2
 Issued                  : 1/1/2024 12:00:00 AM
 Expires                 : 1/1/2025 11:59:59 PM
 AlternativeNames        : {www.example.com, example.com}

@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 2.5
+.VERSION 2.5.1
 
 .GUID 02769b70-101d-404f-bfa1-c76117641280
 
@@ -78,7 +78,8 @@
     Subject                 - The subject name of the certificate.
     Issuer                  - The issuer name of the certificate.
     SerialNumber            - The serial number of the certificate.
-    Thumbprint              - The thumbprint of the certificate.
+    Thumbprint              - The SHA1 thumbprint of the certificate.
+    SHA256Thumbprint        - The SHA256 thumbprint of the certificate.
     Issued                  - The date and time the certificate is valid from.
     Expires                 - The date and time the certificate expires.
     AlternativeNames        - The subject alternative names (SANs) of the certificate.
@@ -93,9 +94,9 @@
     https://github.com/richardhicks/tlscertificate/blob/main/Get-TlsCertificate.ps1
 
 .NOTES
-    Version:        2.5
+    Version:        2.5.1
     Creation Date:  August 12, 2021
-    Last Updated:   May 23, 2026
+    Last Updated:   May 27, 2026
     Author:         Richard Hicks
     Organization:   Richard M. Hicks Consulting, Inc.
     Contact:        rich@richardhicks.com
@@ -269,6 +270,11 @@ Process {
 
             }
 
+            # Compute SHA256 fingerprint
+            $Sha256 = [System.Security.Cryptography.SHA256]::Create()
+            $Sha256Hash = ($Sha256.ComputeHash($Certificate.RawData) | ForEach-Object { $_.ToString('X2') }) -join ''
+            $Sha256.Dispose()
+
             # Extract Subject Alternative Names (SANs) from the certificate
             $SubjectAlternativeNames = @()
             $SanExtension = $Certificate.Extensions | Where-Object { $_.Oid.Value -eq '2.5.29.17' }
@@ -345,6 +351,7 @@ Process {
                 Issuer             = $Certificate.Issuer
                 SerialNumber       = $Certificate.SerialNumber
                 Thumbprint         = $Certificate.Thumbprint
+                SHA256Thumbprint   = $Sha256Hash
                 Issued             = $Certificate.NotBefore
                 Expires            = $Certificate.NotAfter
                 AlternativeNames   = $SubjectAlternativeNames
@@ -398,10 +405,10 @@ Process {
 }
 
 # SIG # Begin signature block
-# MIIk7QYJKoZIhvcNAQcCoIIk3jCCJNoCAQExDzANBglghkgBZQMEAgEFADB5Bgor
+# MIIk7AYJKoZIhvcNAQcCoIIk3TCCJNkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBUCC9aO9qH1kra
-# EujsBFkdsxZjb7CnVu/BR5FYIrj1WKCCH6YwggWNMIIEdaADAgECAhAOmxiO+dAt
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCm89oV+bnnTWjG
+# PGoK1PsClz/090YMjyAg9i1KEHTV/aCCH6YwggWNMIIEdaADAgECAhAOmxiO+dAt
 # 5+/bUOIIQBhaMA0GCSqGSIb3DQEBDAUAMGUxCzAJBgNVBAYTAlVTMRUwEwYDVQQK
 # EwxEaWdpQ2VydCBJbmMxGTAXBgNVBAsTEHd3dy5kaWdpY2VydC5jb20xJDAiBgNV
 # BAMTG0RpZ2lDZXJ0IEFzc3VyZWQgSUQgUm9vdCBDQTAeFw0yMjA4MDEwMDAwMDBa
@@ -570,30 +577,29 @@ Process {
 # cJIFcbojBcxlRcGG0LIhp6GvReQGgMgYxQbV1S3CrWqZzBt1R9xJgKf47CdxVRd/
 # ndUlQ05oxYy2zRWVFjF7mcr4C34Mj3ocCVccAvlKV9jEnstrniLvUxxVZE/rptb7
 # IRE2lskKPIJgbaP5t2nGj/ULLi49xTcBZU8atufk+EMF/cWuiC7POGT75qaL6vdC
-# vHlshtjdNXOCIUjsarfNZzGCBJ0wggSZAgEBMH0waTELMAkGA1UEBhMCVVMxFzAV
+# vHlshtjdNXOCIUjsarfNZzGCBJwwggSYAgEBMH0waTELMAkGA1UEBhMCVVMxFzAV
 # BgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEwPwYDVQQDEzhEaWdpQ2VydCBUcnVzdGVk
 # IEc0IENvZGUgU2lnbmluZyBSU0E0MDk2IFNIQTM4NCAyMDIxIENBMQIQDsYrSCrm
 # UJuvTRscProh/zANBglghkgBZQMEAgEFAKCBhDAYBgorBgEEAYI3AgEMMQowCKAC
 # gAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcCAQsx
-# DjAMBgorBgEEAYI3AgEVMC8GCSqGSIb3DQEJBDEiBCCItmqfpfMZ8zHtGwpfBNAj
-# vt0FuHTA/ryyc5xEEpDb0zALBgcqhkjOPQIBBQAESDBGAiEAv4E3lC2OuoZ5OAbh
-# VC8j9HIvXohaHcmsJYPPH4kVlaUCIQCJGLT+d5w4hBLiNYaefptv1LONs6QHPwx1
-# 3T6eBIANm6GCAyYwggMiBgkqhkiG9w0BCQYxggMTMIIDDwIBATB9MGkxCzAJBgNV
-# BAYTAlVTMRcwFQYDVQQKEw5EaWdpQ2VydCwgSW5jLjFBMD8GA1UEAxM4RGlnaUNl
-# cnQgVHJ1c3RlZCBHNCBUaW1lU3RhbXBpbmcgUlNBNDA5NiBTSEEyNTYgMjAyNSBD
-# QTECEAqA7xhLjfEFgtHEdqeVdGgwDQYJYIZIAWUDBAIBBQCgaTAYBgkqhkiG9w0B
-# CQMxCwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0yNjA1MjMyMDM2MzhaMC8G
-# CSqGSIb3DQEJBDEiBCCW2UKKHYwC30lwj0uJMjzuGaAnZZTxpsjZggX5Eq+6WDAN
-# BgkqhkiG9w0BAQEFAASCAgAEUrSg0oRSRo/YY+ut5+bzs+6IqIcC6/ucfmGrdxRm
-# lAmvq6i3UVHc274xywkEHTWYwBIb1gkd/qRClWwCXHp0BIxyjKJdB4Ut18zrC0lk
-# 3pAeOW7YUThX/RIfQiZT4MRVarqFecFxpKSS6zxoKqXyWc9mFPNA4jxWhgyp8/X6
-# lFl4J3OM3V4uN7R6QQQIocCWUvTU0q8e26CCx4+VmyoJQmqOaSmddtLYdYsGZr0g
-# v+Yjia1DdBkUStgEmmjla1SG4SpHL59W6Kl9QIwWJkkT6wRVeV/cOImD0+s7VCCy
-# ++8HBd+pdSccJiwD4f9v0yW14OyoYp1nXXm7GSSKzjrODF1eZhlcdD31gMhXdNYb
-# bmeJz+V0JO70ju5ctDeR4ROujFpBtWuv13xapxPpfVXZw/3vHrhtlIswimFxcgE0
-# UK8VJKua98VQn+MbyS18l44a1j5/4se3sDmDWoL31WyKodm641IQMhpG1ThDRB4+
-# yO1sGcUVTGa8qWlyERlJzEFP4Xx2s3lZ6+yStSXtnBLn5ECc5kxcmwOR/GJnGU3X
-# XiUs0YldQE4RLifta12sf+BzXk6JPG642hFdb/mXgCmVAofrU4kGS1+CNN+DoWRm
-# N+Q8d6f/PqCTXoGKYGQiWwMaNrpVgfq5K6Y6fzMynphv28LOENu/gVy6xQr1Q0lT
-# gA==
+# DjAMBgorBgEEAYI3AgEVMC8GCSqGSIb3DQEJBDEiBCBj+ktEv2uVUb2/1maaTabs
+# Jv70uYDY6xKEVgoxCC1fPjALBgcqhkjOPQIBBQAERzBFAiBFuWVd3lPT5X89MLbS
+# rsMjAUX8AAl0nUkQY4rB2X9QAAIhAIncclahY/lLhz3LYhrxN0zHsdx7QiXp04k0
+# xyzRdBkyoYIDJjCCAyIGCSqGSIb3DQEJBjGCAxMwggMPAgEBMH0waTELMAkGA1UE
+# BhMCVVMxFzAVBgNVBAoTDkRpZ2lDZXJ0LCBJbmMuMUEwPwYDVQQDEzhEaWdpQ2Vy
+# dCBUcnVzdGVkIEc0IFRpbWVTdGFtcGluZyBSU0E0MDk2IFNIQTI1NiAyMDI1IENB
+# MQIQCoDvGEuN8QWC0cR2p5V0aDANBglghkgBZQMEAgEFAKBpMBgGCSqGSIb3DQEJ
+# AzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTI2MDUyNzIzMjkyNlowLwYJ
+# KoZIhvcNAQkEMSIEIHTc/nTN5uo8U9EvsoDSWan6cajd8SXardNts5wK3RBuMA0G
+# CSqGSIb3DQEBAQUABIICAIGN47flVb38dhW5HNfILFHlEIrkuBuFW+YUQDN9OTPK
+# UocjY9AqHqcXruZls5rZ5mhBjewsUDfwKzRNfMTFuHM6525tiFUmbFQ8IrbrY2di
+# w50SZd80sOZgnxNoZ+j0jzBeDW6vORnKFKMUBR6oCtj6iiqbwtx+JKsY18jap42o
+# yoFCoNP/Vv2SCgZTzJMhHefQWEQwyAHpBPhpGVcCaq48QIAEUVuoYZzjVEij2CE9
+# uzXZ0yb3nPZDcsUadwHoGUrEysjgSEO0y0lspI/+dBq8CybmgHEbILsA8VnaZQ25
+# vrgPcgfX4c6PDOLkYu4XGu6yGJMVxt0CNzt8bHq2MkCRp4deL16ldVVSBvKG9pzp
+# lvLUuMNXoo06pDQtrjgk1Dk7K1nt/IygEmuIv7dkmOBQN9Az9MbPUgI+2RO67O/r
+# 17Im9WC4AwokFnI7ZGTpOrSvtRHpzBczbK3tem/enlheW2Dpt5TouLP50o4DuwrZ
+# tYAe84nzqC/Q8sxTHrbRMpXRlChitYbRSlmAErrSYa6Mpj75hDABP9gGmi2SUhS2
+# Uk7X8FIbe2i/PHOwggJijI4aKorCJz3scNc8BfHDVB/G8TtZDh6ueUR3fdCiv3e0
+# J1EjFGTp7VcW3/K6EJQRgQl3GGYXacFJuqKTlP71I9G3YmPzSJ93i+9jhjm5ShsX
 # SIG # End signature block
