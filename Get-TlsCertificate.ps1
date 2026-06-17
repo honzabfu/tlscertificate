@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 2.5.1
+.VERSION 2.5.2
 
 .GUID 02769b70-101d-404f-bfa1-c76117641280
 
@@ -94,13 +94,19 @@
     https://github.com/richardhicks/tlscertificate/blob/main/Get-TlsCertificate.ps1
 
 .NOTES
-    Version:        2.5.1
+    Version:        2.5.2
     Creation Date:  August 12, 2021
-    Last Updated:   May 27, 2026
+    Last Updated:   June 17, 2026
     Author:         Richard Hicks
     Organization:   Richard M. Hicks Consulting, Inc.
     Contact:        rich@richardhicks.com
     Website:        https://www.richardhicks.com/
+
+    Version History:
+    2.5.2 - June 17, 2026 - honzaBFU
+        Added cross-platform fallback for connectivity check. On non-Windows systems
+        where Test-NetConnection is unavailable, TcpClient.ConnectAsync() is used
+        with a 3-second timeout to match Test-NetConnection behavior.
 
 #>
 
@@ -122,10 +128,41 @@ Process {
     ForEach ($Server in $Hostname) {
 
         # Test connectivity before proceeding
-        If (-not (Test-NetConnection -ComputerName $Server -Port $Port -InformationLevel Quiet)) {
+        If (Get-Command -Name 'Test-NetConnection' -ErrorAction SilentlyContinue) {
 
-            Write-Warning "Unable to connect to $Server on port $Port."
-            Continue
+            If (-not (Test-NetConnection -ComputerName $Server -Port $Port -InformationLevel Quiet)) {
+
+                Write-Warning "Unable to connect to $Server on port $Port."
+                Continue
+
+            }
+
+        }
+        Else {
+
+            $TestClient = New-Object -TypeName System.Net.Sockets.TcpClient
+            Try {
+
+                $Connected = $TestClient.ConnectAsync($Server, $Port).Wait(3000)
+                If (-not $Connected) {
+
+                    Write-Warning "Unable to connect to $Server on port $Port."
+                    Continue
+
+                }
+
+            }
+            Catch {
+
+                Write-Warning "Unable to connect to $Server on port $Port."
+                Continue
+
+            }
+            Finally {
+
+                $TestClient.Dispose()
+
+            }
 
         }
 
